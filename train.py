@@ -77,7 +77,7 @@ def train(hyp):
         os.remove(f)
 
     # Create model
-    model = Model(opt.cfg, nc=data_dict['nc']).to(device)
+    model = Model(opt.cfg, ch=4, nc=data_dict['nc']).to(device)
 
     # Image sizes
     gs = int(max(model.stride))  # grid size (max stride)
@@ -356,7 +356,7 @@ def train(hyp):
 
 
 if __name__ == '__main__':
-    check_git_status()
+#    check_git_status()
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=300)
     parser.add_argument('--batch-size', type=int, default=16)

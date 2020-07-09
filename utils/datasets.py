@@ -115,7 +115,7 @@ class LoadImages:  # for inference
         else:
             # Read image
             self.count += 1
-            img0 = cv2.imread(path)  # BGR
+            img0 = cv2.imread(path, cv2.CV_LOAD_IMAGE_UNCHANGED)  # BGRP
             assert img0 is not None, 'Image Not Found ' + path
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
@@ -403,7 +403,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 # Extract object detection boxes for a second stage classifier
                 if extract_bounding_boxes:
                     p = Path(self.img_files[i])
-                    img = cv2.imread(str(p))
+                    img = cv2.imread(str(p), cv2.CV_LOAD_IMAGE_UNCHANGED)
                     h, w = img.shape[:2]
                     for j, x in enumerate(l):
                         f = '%s%sclassifier%s%g_%g_%s' % (p.parent.parent, os.sep, os.sep, x[0], j, p.name)
@@ -551,7 +551,7 @@ def load_image(self, index):
     img = self.imgs[index]
     if img is None:  # not cached
         path = self.img_files[index]
-        img = cv2.imread(path)  # BGR
+        img = cv2.imread(path, cv2.CV_LOAD_IMAGE_UNCHANGED)  # BGRP
         assert img is not None, 'Image Not Found ' + path
         h0, w0 = img.shape[:2]  # orig hw
         r = self.img_size / max(h0, w0)  # resize image to img_size
@@ -565,7 +565,7 @@ def load_image(self, index):
 
 def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     r = np.random.uniform(-1, 1, 3) * [hgain, sgain, vgain] + 1  # random gains
-    hue, sat, val = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+    hue, sat, val = cv2.split(cv2.cvtColor(img[:,:,0:3], cv2.COLOR_BGR2HSV))
     dtype = img.dtype  # uint8
 
     x = np.arange(0, 256, dtype=np.int16)
@@ -573,7 +573,7 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     lut_sat = np.clip(x * r[1], 0, 255).astype(dtype)
     lut_val = np.clip(x * r[2], 0, 255).astype(dtype)
 
-    img_hsv = cv2.merge((cv2.LUT(hue, lut_hue), cv2.LUT(sat, lut_sat), cv2.LUT(val, lut_val))).astype(dtype)
+    img_hsv = cv2.merge((cv2.LUT(hue, lut_hue), cv2.LUT(sat, lut_sat), cv2.LUT(val, lut_val), img[:,:,3])).astype(dtype)
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
 
     # Histogram equalization
